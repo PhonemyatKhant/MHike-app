@@ -21,6 +21,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class InputHikeActivity extends AppCompatActivity {
 
     private EditText et_hikeName, et_location, et_hikeLength, et_hikeDate, et_equipment, et_desc;
@@ -34,7 +36,8 @@ public class InputHikeActivity extends AppCompatActivity {
     DatabaseHelper databaseHelper;
 
     SQLiteDatabase db;
-
+    ArrayList<HikeDataModel> hikeDataModelArrayList;
+    int hike_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +60,7 @@ public class InputHikeActivity extends AppCompatActivity {
         btn_submit = findViewById(R.id.btn_submit);
 
         databaseHelper = new DatabaseHelper(this);
+        hikeDataModelArrayList = databaseHelper.getHikes();
 
 
         //set up spinner
@@ -71,6 +75,41 @@ public class InputHikeActivity extends AppCompatActivity {
                 showDatePicker();
             }
         });
+
+        // Retrieve data from the intent
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            hike_id = extras.getInt("hikeId");
+            String hikeName = extras.getString("hikeName");
+            String hikeLocation = extras.getString("location");
+            double hikeLength = extras.getDouble("hikeLength");
+            String hikeDate = extras.getString("hikeDate");
+            boolean parkingAvailable = extras.getBoolean("parkingAvailable");
+            String hikeDifficulty = extras.getString("difficulty");
+            float hikeRating = extras.getFloat("rating");
+            String hikeEquipment = extras.getString("equipment");
+            String hikeDescription = extras.getString("description");
+
+            // Set the data to the corresponding views
+
+            et_hikeName.setText(hikeName);
+            et_location.setText(hikeLocation);
+            et_hikeLength.setText(String.valueOf(hikeLength));
+            et_hikeDate.setText(hikeDate);
+
+            if (parkingAvailable) {
+                rd_yes.setChecked(true);
+            } else {
+                rd_no.setChecked(true);
+            }
+
+            int position = adapter.getPosition(hikeDifficulty);
+            spn_difficulty.setSelection(position);
+
+            ratingBar.setRating(hikeRating);
+            et_equipment.setText(hikeEquipment);
+            et_desc.setText(hikeDescription);
+        }
 
 
         //submit button click
@@ -136,28 +175,45 @@ public class InputHikeActivity extends AppCompatActivity {
 
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-
-                db = databaseHelper.getWritableDatabase();
-
-                HikeDataModel hikeDataModel = new HikeDataModel(0, et_hikeName.getText().toString(), et_location.getText().toString(), Double.parseDouble(et_hikeLength.getText().toString()), et_hikeDate.getText().toString(), rd_yes.isChecked(), et_equipment.getText().toString(), spn_difficulty.getSelectedItem().toString(), et_desc.getText().toString(), ratingBar.getRating());
-
-                long newRowId = databaseHelper.insertHike(hikeDataModel);
-
-
-                if (newRowId != -1) {
-
-                    Toast.makeText(InputHikeActivity.this, "Data saved successfully!", Toast.LENGTH_SHORT).show();
-                } else {
-
-                    Toast.makeText(InputHikeActivity.this, "Data save failed.", Toast.LENGTH_SHORT).show();
+            public void onClick(View v) {// Check if you received a hikeId, indicating editing
+                boolean isEditing = false;
+                Bundle extras = getIntent().getExtras();
+                if (extras != null) {
+                    Integer hikeId = extras.getInt("hikeId");
+                    if (hikeId != null && hikeId > 0) {
+                        isEditing = true;
+                    }
                 }
 
-                db.close();
-                dialog.dismiss();
+// Now, you can use the isEditing flag to update or insert data accordingly
+                if (isEditing) {
+                    // Perform update
+                    HikeDataModel hikeDataModel = new HikeDataModel(hike_id, et_hikeName.getText().toString(), et_location.getText().toString(), Double.parseDouble(et_hikeLength.getText().toString()), et_hikeDate.getText().toString(), rd_yes.isChecked(), et_equipment.getText().toString(), spn_difficulty.getSelectedItem().toString(), et_desc.getText().toString(), ratingBar.getRating());
+                    long rowsAffected = databaseHelper.updateHike(hikeDataModel);
+
+                    if (rowsAffected > 0) {
+                        Toast.makeText(InputHikeActivity.this, "Data updated successfully!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(InputHikeActivity.this, "Data update failed.", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Perform insert
+                    HikeDataModel hikeDataModel = new HikeDataModel(0, et_hikeName.getText().toString(), et_location.getText().toString(), Double.parseDouble(et_hikeLength.getText().toString()), et_hikeDate.getText().toString(), rd_yes.isChecked(), et_equipment.getText().toString(), spn_difficulty.getSelectedItem().toString(), et_desc.getText().toString(), ratingBar.getRating());
+                    long newRowId = databaseHelper.insertHike(hikeDataModel);
+
+                    if (newRowId != -1) {
+                        Toast.makeText(InputHikeActivity.this, "Data saved successfully!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(InputHikeActivity.this, "Data save failed.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+// Finish the activity and navigate back to HomeActivity
+
                 Intent intent = new Intent(InputHikeActivity.this, HomeActivity.class);
                 startActivity(intent);
-                finish();
+               // finish();
+
             }
         });
 

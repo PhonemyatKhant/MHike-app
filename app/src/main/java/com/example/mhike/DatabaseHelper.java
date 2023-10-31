@@ -12,7 +12,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "hike_data.db";
-    
+
     // hike table
     public static final String TABLE_HIKES = "hikes";
     public static final String COLUMN_ID = "id";
@@ -32,7 +32,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_OBSERVATION_TEXT = "observation_text";
     public static final String COLUMN_OBSERVATION_TIME = "observation_time";
     public static final String COLUMN_ADDITIONAL_CMT = "additional_cmt";
-
 
 
     private SQLiteDatabase db;
@@ -81,11 +80,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(dropObservationsTable);
         onCreate(db);
     }
+
     @Override
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
         db.execSQL("PRAGMA foreign_keys=ON;"); //foreign key
     }
+
     // Insert a new hike record into the database
     public long insertHike(HikeDataModel hikeDataModel) {
         db = this.getWritableDatabase();
@@ -160,6 +161,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.delete(TABLE_HIKES, whereClause, whereArgs);
     }
 
+    //update hike
+// Update a hike record in the database
+    public int updateHike(HikeDataModel hikeDataModel) {
+        db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        // Populate the ContentValues with updated data from the HikeDataModel
+        values.put(COLUMN_HIKE_NAME, hikeDataModel.getHikeName());
+        values.put(COLUMN_LOCATION, hikeDataModel.getLocation());
+        values.put(COLUMN_HIKE_LENGTH, hikeDataModel.getHikeLength());
+        values.put(COLUMN_HIKE_DATE, hikeDataModel.getHikeDate());
+        values.put(COLUMN_PARKING_AVAILABLE, hikeDataModel.isParkingAvailable() ? 1 : 0);
+        values.put(COLUMN_EQUIPMENT, hikeDataModel.getEquipment());
+        values.put(COLUMN_DIFFICULTY, hikeDataModel.getDifficulty());
+        values.put(COLUMN_DESCRIPTION, hikeDataModel.getDescription());
+        values.put(COLUMN_RATING, hikeDataModel.getRating());
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(hikeDataModel.getId())};
+
+        int rowsUpdated = db.update(TABLE_HIKES, values, whereClause, whereArgs);
+
+        db.close();
+
+        return rowsUpdated;
+    }
+
 
     public long insertObservation(ObservationDataModel observationDataModel) {
         db = this.getWritableDatabase();
@@ -189,7 +217,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
         String selection = COLUMN_HIKE_ID + " = ?";
-        String[] selectionArgs = { String.valueOf(hikeId) };
+        String[] selectionArgs = {String.valueOf(hikeId)};
 
         Cursor cursor = db.query(
                 TABLE_OBSERVATION,
@@ -224,15 +252,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         String whereClause = COLUMN_HIKE_ID + " = ?";
-        String[] whereArgs = { String.valueOf(hikeId) };
+        String[] whereArgs = {String.valueOf(hikeId)};
 
         int deletedRows = db.delete(TABLE_OBSERVATION, whereClause, whereArgs);
         return deletedRows;
     }
-
-
-
-
 
 
 }

@@ -119,18 +119,30 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         }
     }
 
-    @Override
-    public void onEditClick(int position) {
-        if (position >= 0 && position < hikeDataModelArrayList.size()) {
-            HikeDataModel hikeData = hikeDataModelArrayList.get(position);
-            int hikeId = hikeData.getId();
 
-            // Create an intent to start InputHikeActivity for editing
-            Intent intent = new Intent(HomeActivity.this, InputHikeActivity.class);
-            intent.putExtra("hikeId", hikeId);
-            startActivity(intent);
-        }
+    public void onEditClick(int position) {
+        // Retrieve the selected hike based on the position
+        HikeDataModel hikeData = hikeDataModelArrayList.get(position);
+
+        // Create an intent to navigate to a new activity to view hike details
+        Intent intent = new Intent(HomeActivity.this, InputHikeActivity.class);
+
+        // Pass data to the new activity
+        intent.putExtra("hikeId", hikeData.getId());
+        intent.putExtra("hikeName", hikeData.getHikeName());
+        intent.putExtra("location", hikeData.getLocation());
+        intent.putExtra("hikeLength", hikeData.getHikeLength());
+        intent.putExtra("hikeDate", hikeData.getHikeDate());
+        intent.putExtra("parkingAvailable", hikeData.isParkingAvailable());
+        intent.putExtra("equipment", hikeData.getEquipment());
+        intent.putExtra("difficulty", hikeData.getDifficulty());
+        intent.putExtra("description", hikeData.getDescription());
+        intent.putExtra("rating", hikeData.getRating());
+
+        // Start the new activity
+        startActivity(intent);
     }
+
 
 
 }
