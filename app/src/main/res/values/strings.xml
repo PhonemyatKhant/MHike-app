@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">M-Hike</string>
+    <string name="get_started"><![CDATA[get started ->]]></string>
+    <string name="input_hike_details">Input Hike Details</string>
+    <string name="parking">Parking Available?</string>
+    <string name="btn_submit">Submit</string>
+    <string name="difficulty">Hike Difficulty: </string>
+    <string name="observation">Observations</string>
+    <string-array name="difficulty">
+        <item>easy</item>
+        <item>medium</item>
+        <item>hard</item>
+    </string-array>
+</resources>
