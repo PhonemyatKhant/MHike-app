@@ -3,6 +3,7 @@ package com.example.mhike;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class HikeDetailsActivity extends AppCompatActivity {
+public class HikeDetailsActivity extends AppCompatActivity implements ObservationRecyclerViewInterface {
 
     private TextView hikeTitle;
     private TextView location, length, date, parking, difficulty, rating, equipment, description;
@@ -61,8 +62,6 @@ public class HikeDetailsActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.rv_observations);
 
 
-
-
         // Retrieve data from the intent
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -96,12 +95,11 @@ public class HikeDetailsActivity extends AppCompatActivity {
         // Set up the RecyclerView to display the list of hikes
 
 
-
         // Create and set the adapter for the RecyclerView
 
         recyclerView.hasFixedSize();
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        observationRecyclerViewAdapter = new ObservationRecyclerViewAdapter(this, observationDataModelArrayList);
+        observationRecyclerViewAdapter = new ObservationRecyclerViewAdapter(this, observationDataModelArrayList, this);
 
         recyclerView.setAdapter(observationRecyclerViewAdapter); // Use the correct adapter
 
@@ -116,15 +114,15 @@ public class HikeDetailsActivity extends AppCompatActivity {
 
         //add observation
         addObservation.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
                 if (TextUtils.isEmpty(observationName.getText().toString())
                         || TextUtils.isEmpty(observationTime.getText().toString())
-                        || TextUtils.isEmpty(additionalCmt.getText().toString()))
-                        {
+                        || TextUtils.isEmpty(additionalCmt.getText().toString())) {
 
                     Toast.makeText(HikeDetailsActivity.this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
-                } else{// All required fields are filled, so you can proceed to insert the observation data into the database
+                } else {// All required fields are filled, so you can proceed to insert the observation data into the database
 
                     // Get the values from the UI
                     String observationText = observationName.getText().toString();
@@ -132,7 +130,7 @@ public class HikeDetailsActivity extends AppCompatActivity {
                     String additionalComment = additionalCmt.getText().toString();
 
 
-                    ObservationDataModel observationDataModel = new ObservationDataModel((int) hike_id,observationText,observationT,additionalComment);
+                    ObservationDataModel observationDataModel = new ObservationDataModel(0, (int) hike_id, observationText, observationT, additionalComment);
 
                     // Insert the observation into the database
                     long newRowId = databaseHelper.insertObservation(observationDataModel);
@@ -152,14 +150,13 @@ public class HikeDetailsActivity extends AppCompatActivity {
                     } else {
                         // Insertion failed
 
-                        Toast.makeText(HikeDetailsActivity.this, "Failed to add observation"+hike_id, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(HikeDetailsActivity.this, "Failed to add observation" + hike_id, Toast.LENGTH_SHORT).show();
                     }
                 }
-                }
             }
+  }
         );
     }
-
 
 
     // Define the showTimePickerDialog method to display a time picker dialog:
@@ -181,4 +178,92 @@ public class HikeDetailsActivity extends AppCompatActivity {
         );
         timePickerDialog.show();
     }
+
+
+    @Override
+    public void onDeleteClick(int position) {
+
+        // Check if the position is valid
+        if (position >= 0 && position < observationDataModelArrayList.size()) {
+            // Get the observation ID from the selected position
+            int observationIdToDelete = observationDataModelArrayList.get(position).getObservationId();
+
+
+            // Delete the observation from the database
+            int deletedRows = databaseHelper.deleteObservations(observationIdToDelete);
+
+            if (deletedRows > 0) {
+                // Deletion was successful
+                Toast.makeText(HikeDetailsActivity.this, "Observation deleted successfully", Toast.LENGTH_SHORT).show();
+
+                // Update the RecyclerView with the latest data
+                observationDataModelArrayList.remove(position);
+                observationRecyclerViewAdapter.notifyItemRemoved(position);
+            } else {
+                // Deletion failed
+                Toast.makeText(HikeDetailsActivity.this, "Failed to delete observation", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    @Override
+    public void onEditClick(int position) {
+        if (position >= 0 && position < observationDataModelArrayList.size()) {
+            ObservationDataModel observationToEdit = observationDataModelArrayList.get(position);
+
+            // Set the existing observation data to the input fields
+            observationName.setText(observationToEdit.getObservationText());
+            observationTime.setText(observationToEdit.getObservationTime());
+            additionalCmt.setText(observationToEdit.getAdditionalComment());
+
+            // Store the observation ID in a variable for later use in the update
+            int observationIdToEdit = observationToEdit.getObservationId();
+
+            // Optionally, you can also update the button text to indicate editing
+            addObservation.setText("Update Observation");
+
+            // Define an update action for the "Update Observation" button
+            addObservation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (TextUtils.isEmpty(observationName.getText().toString())
+                            || TextUtils.isEmpty(observationTime.getText().toString())
+                            || TextUtils.isEmpty(additionalCmt.getText().toString())) {
+                        Toast.makeText(HikeDetailsActivity.this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Get the updated values from the UI
+                        String updatedObservationText = observationName.getText().toString();
+                        String updatedObservationTime = observationTime.getText().toString();
+                        String updatedAdditionalComment = additionalCmt.getText().toString();
+
+                        // Create an updated ObservationDataModel
+                        ObservationDataModel updatedObservation = new ObservationDataModel(
+                                observationIdToEdit, (int) hike_id, updatedObservationText, updatedObservationTime, updatedAdditionalComment
+                        );
+
+                        // Call your updateObservation method here to update the observation in the database
+                        int rowsUpdated = databaseHelper.updateObservation(updatedObservation);
+
+                        if (rowsUpdated > 0) {
+                            Toast.makeText(HikeDetailsActivity.this, "Observation updated successfully", Toast.LENGTH_SHORT).show();
+
+                            // Clear the input fields and restore the button text
+                            observationName.setText("");
+                            observationTime.setText("");
+                            additionalCmt.setText("");
+                            addObservation.setText("Add Observation");
+
+                            // Optionally, you can update the RecyclerView with the latest data
+                            observationDataModelArrayList = databaseHelper.getObservations(hike_id);
+                            observationRecyclerViewAdapter.updateData(observationDataModelArrayList);
+                        } else {
+                            Toast.makeText(HikeDetailsActivity.this, "Failed to update observation", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            });
+        }
+    }
+
 }

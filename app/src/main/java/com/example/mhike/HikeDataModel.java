@@ -120,4 +120,8 @@ public class HikeDataModel {
     public void setRating(float rating) {
         this.rating = rating;
     }
+
+    public boolean matchesSearchQuery(String query) {
+        return hikeName.toLowerCase().contains(query.toLowerCase());
+    }
 }

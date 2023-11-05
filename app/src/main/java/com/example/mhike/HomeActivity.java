@@ -19,6 +19,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
     DatabaseHelper databaseHelper;
 
     ArrayList<HikeDataModel> hikeDataModelArrayList;
+    ArrayList<HikeDataModel> filteredHikes;
 
     RecyclerViewAdapter recyclerViewAdapter;
 
