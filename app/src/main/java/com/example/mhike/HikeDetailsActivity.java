@@ -1,6 +1,7 @@
 package com.example.mhike;
 
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -259,6 +260,9 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
                             // Optionally, you can update the RecyclerView with the latest data
                             observationDataModelArrayList = databaseHelper.getObservations(hike_id);
                             observationRecyclerViewAdapter.updateData(observationDataModelArrayList);
+                            Intent intent = getIntent();
+                            finish(); // Finish the current activity
+                            startActivity(intent); // Start the activity again
                         } else {
                             Toast.makeText(HikeDetailsActivity.this, "Failed to update observation", Toast.LENGTH_SHORT).show();
                         }

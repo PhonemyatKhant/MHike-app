@@ -145,8 +145,11 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         if (result != -1) {
             // Hike deleted successfully, now refresh the RecyclerView
             hikeDataModelArrayList.remove(position);
+            filteredHikes.remove(hikeData);
+            adapter.notifyDataSetChanged();
             recyclerViewAdapter.notifyItemRemoved(position);
             recyclerViewAdapter.notifyItemRangeChanged(position, hikeDataModelArrayList.size());
+
         } else {
             // Handle deletion error
             // You can show a Toast message or perform any other error handling here.
