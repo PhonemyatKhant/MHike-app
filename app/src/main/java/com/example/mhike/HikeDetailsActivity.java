@@ -198,7 +198,9 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
 
                 // Update the RecyclerView with the latest data
                 observationDataModelArrayList.remove(position);
+
                 observationRecyclerViewAdapter.notifyItemRemoved(position);
+                observationRecyclerViewAdapter.updateData(observationDataModelArrayList);
             } else {
                 // Deletion failed
                 Toast.makeText(HikeDetailsActivity.this, "Failed to delete observation", Toast.LENGTH_SHORT).show();

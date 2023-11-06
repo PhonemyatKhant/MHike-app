@@ -280,6 +280,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return rowsUpdated;
     }
+    public void deleteAllUsers(){
+        db.delete(TABLE_HIKES,null,null);
+
+    }
 
 
 

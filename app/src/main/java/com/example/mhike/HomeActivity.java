@@ -2,7 +2,12 @@ package com.example.mhike;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,7 +18,7 @@ import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity implements RecyclerViewInterface {
     private ImageButton btn_add, btn_viewAll;
-    private RecyclerViewAdapter adapter;
+    private EditText etSearch;
 
     RecyclerView recyclerView;
     DatabaseHelper databaseHelper;
@@ -22,11 +27,13 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
     ArrayList<HikeDataModel> filteredHikes;
 
     RecyclerViewAdapter recyclerViewAdapter;
+    RecyclerViewAdapter adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        etSearch = findViewById(R.id.etSearch);
 
         // Initialize the UI components and database helper
         recyclerView = findViewById(R.id.recyclerView);
@@ -36,6 +43,9 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
 
         // Retrieve a list of hikes from the database
         hikeDataModelArrayList = databaseHelper.getHikes();
+        filteredHikes = new ArrayList<>();
+        adapter = new RecyclerViewAdapter(this, filteredHikes, this);
+
 
         // Set up the RecyclerView to display the list of hikes
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -44,6 +54,26 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         // Create and set the adapter for the RecyclerView
         recyclerViewAdapter = new RecyclerViewAdapter(this, hikeDataModelArrayList, this);
         recyclerView.setAdapter(recyclerViewAdapter);
+
+        // Add a TextWatcher to the search EditText
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Perform the search when text changes
+                performSearch(s.toString());
+                Log.d("SearchText", "" + s.toString()); // Log the search text
+
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
 
         // Handle button clicks
         btn_add.setOnClickListener(new View.OnClickListener() {
@@ -57,9 +87,11 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         btn_viewAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start the ViewAllHikes activity when the "View All" button is clicked
-                Intent intent = new Intent(HomeActivity.this, ViewAllHikes.class);
-                startActivity(intent);
+                databaseHelper.deleteAllUsers();
+                hikeDataModelArrayList.clear();
+                // Notify the adapter that the data set has changed
+                recyclerViewAdapter.notifyDataSetChanged();
+
             }
         });
     }
@@ -67,12 +99,13 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
     @Override
     protected void onResume() {
         super.onResume();
-        if (adapter != null) {
+        if (recyclerViewAdapter != null) {
             // Fetch the updated data from the database
             ArrayList<HikeDataModel> updatedData = databaseHelper.getHikes();
 
             // Update the dataset in the adapter
-            adapter.updateData(updatedData);
+            recyclerViewAdapter.updateData(updatedData);
+
         }
     }
 
@@ -144,6 +177,24 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         startActivity(intent);
     }
 
+    private void performSearch(String query) {
+        filteredHikes.clear();
+
+        if (!query.isEmpty()) {
+            for (HikeDataModel hike : hikeDataModelArrayList) {
+                if (hike.getHikeName().toLowerCase().contains(query.toLowerCase())) {
+                    filteredHikes.add(hike);
+                }
+            }
+        } else {
+            // If the query is empty, show all hikes
+            filteredHikes.addAll(hikeDataModelArrayList);
+        }
+        Log.d("Hi", "" + filteredHikes.size());
+
+        recyclerView.setAdapter(adapter);
+
+    }
 
 
 }
