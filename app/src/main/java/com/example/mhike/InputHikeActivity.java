@@ -129,14 +129,14 @@ public class InputHikeActivity extends AppCompatActivity {
 
                     Toast.makeText(InputHikeActivity.this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
                 } else {
-                    String dialogMessage = "Name of hike: " + et_hikeName.getText().toString() + "\n" +
-                            "Location: " + et_location.getText().toString() + "\n" +
-                            "Hike length (km): " + et_hikeLength.getText().toString() + "\n" +
-                            "Date of hike: " + et_hikeDate.getText().toString() + "\n" +
-                            "Parking available: " + (rd_yes.isChecked() ? "Yes" : "No") + "\n" +
-                            "Equipments: " + et_equipment.getText().toString() + "\n" +
-                            "Difficulty: " + spn_difficulty.getSelectedItem().toString() + "\n" +
-                            "Description (Optional): " + et_desc.getText().toString() + "\n" +
+                    String dialogMessage = "Name of hike: " + et_hikeName.getText().toString() + "\n" +"\n" +
+                            "Location: " + et_location.getText().toString() + "\n" +"\n" +
+                            "Hike length (km): " + et_hikeLength.getText().toString() + "\n" +"\n" +
+                            "Date of hike: " + et_hikeDate.getText().toString() + "\n" +"\n" +
+                            "Parking available: " + (rd_yes.isChecked() ? "Yes" : "No") + "\n" +"\n" +
+                            "Equipments: " + et_equipment.getText().toString() + "\n" +"\n" +
+                            "Difficulty: " + spn_difficulty.getSelectedItem().toString() + "\n" +"\n" +
+                            "Description (Optional): " + et_desc.getText().toString() + "\n" +"\n" +
                             "Rating: " + ratingBar.getRating();
 
                     showInputDetails(dialogMessage);

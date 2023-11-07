@@ -85,7 +85,7 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
             date.setText(hikeDate);
             parking.setText(parkingAvailable ? "Yes" : "No");
             difficulty.setText(hikeDifficulty);
-            rating.setText(String.valueOf(hikeRating));
+            rating.setText(String.valueOf(hikeRating)+"/5");
             equipment.setText(hikeEquipment);
             description.setText(hikeDescription);
         }
