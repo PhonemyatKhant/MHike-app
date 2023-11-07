@@ -3,7 +3,6 @@ package com.example.mhike;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -17,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity implements RecyclerViewInterface {
-    private ImageButton btn_add, btn_viewAll;
+    private ImageButton btn_add, btn_deleteAll;
     private EditText etSearch;
 
     RecyclerView recyclerView;
@@ -31,6 +30,8 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
 
     boolean isSearching = false;
 
+    String searchedString ;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +41,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         // Initialize the UI components and database helper
         recyclerView = findViewById(R.id.recyclerView);
         btn_add = findViewById(R.id.btn_add);
-        btn_viewAll = findViewById(R.id.btn_viewAll);
+        btn_deleteAll = findViewById(R.id.btn_deleteAll);
         databaseHelper = new DatabaseHelper(this);
 
         // Retrieve a list of hikes from the database
@@ -68,6 +69,8 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                 // Perform the search when text changes
                 performSearch(s.toString());
                 Log.d("SearchText", "" + s.toString());
+                searchedString = s.toString();
+                if(searchedString.isEmpty()){isSearching = false;}
                 isSearching = true;
 
 
@@ -87,12 +90,14 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                 startActivity(intent);
             }
         });
-        btn_viewAll.setOnClickListener(new View.OnClickListener() {
+        btn_deleteAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 databaseHelper.deleteAllUsers();
                 hikeDataModelArrayList.clear();
+                filteredHikes.clear();
                 // Notify the adapter that the data set has changed
+                adapter.notifyDataSetChanged();
                 recyclerViewAdapter.notifyDataSetChanged();
 
             }
@@ -159,12 +164,22 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             long result = databaseHelper.deleteHike(hikeId);
 
             if (result != -1) {
-                recyclerView.setAdapter(recyclerViewAdapter);
 
-                hikeDataModelArrayList.remove(originalPosition);
-                recyclerViewAdapter.notifyItemRemoved(originalPosition);
-                recyclerViewAdapter.notifyItemRangeChanged(originalPosition, hikeDataModelArrayList.size());
-                isSearching = false;
+                if(!searchedString.isEmpty()){
+                    adapter.notifyDataSetChanged();
+                    filteredHikes.remove(position);
+                    adapter.notifyItemRemoved(position);
+                    adapter.notifyItemRangeChanged(position, filteredHikes.size());
+                }else{
+                    recyclerView.setAdapter(recyclerViewAdapter);
+
+                    hikeDataModelArrayList.remove(originalPosition);
+                    recyclerViewAdapter.notifyItemRemoved(originalPosition);
+                    recyclerViewAdapter.notifyItemRangeChanged(originalPosition, hikeDataModelArrayList.size());
+                    isSearching = false;
+                }
+
+
             }
         }
     }
