@@ -29,6 +29,8 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
     RecyclerViewAdapter recyclerViewAdapter;
     RecyclerViewAdapter adapter;
 
+    boolean isSearching = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,7 +67,8 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Perform the search when text changes
                 performSearch(s.toString());
-                Log.d("SearchText", "" + s.toString()); // Log the search text
+                Log.d("SearchText", "" + s.toString());
+                isSearching = true;
 
 
             }
@@ -106,6 +109,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             // Update the dataset in the adapter
             recyclerViewAdapter.updateData(updatedData);
 
+
         }
     }
 
@@ -135,41 +139,55 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
 
 
     public void onDeleteClick(int position) {
-        if (position >= 0 && position < filteredHikes.size()) {
-            HikeDataModel hikeData = filteredHikes.get(position); // Get the clicked item from the filtered list
-            int originalPosition = hikeDataModelArrayList.indexOf(hikeData); // Find the original position
+        if (isSearching == false) {
+            HikeDataModel hikeData = hikeDataModelArrayList.get(position);
 
-            if (originalPosition >= 0) {
-                int hikeId = hikeData.getId();
+            int hikeId = hikeData.getId();
+            long result = databaseHelper.deleteHike(hikeId);
 
-                // Call the deleteHike method from the DatabaseHelper to delete the hike
-                long result = databaseHelper.deleteHike(hikeId);
 
-                if (result != -1) {
-                    // Hike deleted successfully, now refresh the RecyclerView
-
-                    // Remove the item from both lists
-                    hikeDataModelArrayList.remove(originalPosition);
-                    filteredHikes.remove(position);
-
-                    // Refresh the RecyclerView to reflect the changes
-                    recyclerViewAdapter.notifyDataSetChanged();
-                } else {
-                    // Handle deletion error
-                    // You can show a Toast message or perform any other error handling here.
-                }
+            if (result != -1) {
+                hikeDataModelArrayList.remove(position);
+                recyclerViewAdapter.notifyItemRemoved(position);
+                recyclerViewAdapter.notifyItemRangeChanged(position, hikeDataModelArrayList.size());
             }
         } else {
-            // Handle the case when the item to delete is not found in the filtered list
+            HikeDataModel hikeData = filteredHikes.get(position);
+
+            int hikeId = hikeData.getId();
+            int originalPosition = findPositionById(hikeId, hikeDataModelArrayList);
+            long result = databaseHelper.deleteHike(hikeId);
+
+            if (result != -1) {
+                recyclerView.setAdapter(recyclerViewAdapter);
+
+                hikeDataModelArrayList.remove(originalPosition);
+                recyclerViewAdapter.notifyItemRemoved(originalPosition);
+                recyclerViewAdapter.notifyItemRangeChanged(originalPosition, hikeDataModelArrayList.size());
+                isSearching = false;
+            }
         }
     }
 
-
-
+    private int findPositionById(int hikeId, ArrayList<HikeDataModel> list) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getId() == hikeId) {
+                return i;
+            }
+        }
+        return -1; // Return -1 if the item is not found in the list
+    }
 
     public void onEditClick(int position) {
+        HikeDataModel hikeData;
         // Retrieve the selected hike based on the position
-        HikeDataModel hikeData = hikeDataModelArrayList.get(position);
+        hikeData = hikeDataModelArrayList.get(position);
+        if(isSearching){
+            hikeData = filteredHikes.get(position);
+            int hikeId = hikeData.getId();
+            int originalPosition = findPositionById(hikeId, hikeDataModelArrayList);
+            hikeData = hikeDataModelArrayList.get(originalPosition);
+        }
 
         // Create an intent to navigate to a new activity to view hike details
         Intent intent = new Intent(HomeActivity.this, InputHikeActivity.class);
@@ -199,11 +217,12 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                     filteredHikes.add(hike);
                 }
             }
+            Log.d("COUNT", "" + filteredHikes.size());
         } else {
             // If the query is empty, show all hikes
             filteredHikes.addAll(hikeDataModelArrayList);
         }
-
+        recyclerView.setAdapter(adapter);
         // Refresh the RecyclerView to reflect the changes
         recyclerViewAdapter.notifyDataSetChanged();
     }
