@@ -134,27 +134,37 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
     }
 
 
-    @Override
     public void onDeleteClick(int position) {
-        HikeDataModel hikeData = hikeDataModelArrayList.get(position); // Get the clicked item
-        int hikeId = hikeData.getId(); // Get the ID of the clicked hike
+        if (position >= 0 && position < filteredHikes.size()) {
+            HikeDataModel hikeData = filteredHikes.get(position); // Get the clicked item from the filtered list
+            int originalPosition = hikeDataModelArrayList.indexOf(hikeData); // Find the original position
 
-        // Call the deleteHike method from the DatabaseHelper to delete the hike
-        long result = databaseHelper.deleteHike(hikeId);
+            if (originalPosition >= 0) {
+                int hikeId = hikeData.getId();
 
-        if (result != -1) {
-            // Hike deleted successfully, now refresh the RecyclerView
-            hikeDataModelArrayList.remove(position);
-            filteredHikes.remove(hikeData);
-            adapter.notifyDataSetChanged();
-            recyclerViewAdapter.notifyItemRemoved(position);
-            recyclerViewAdapter.notifyItemRangeChanged(position, hikeDataModelArrayList.size());
+                // Call the deleteHike method from the DatabaseHelper to delete the hike
+                long result = databaseHelper.deleteHike(hikeId);
 
+                if (result != -1) {
+                    // Hike deleted successfully, now refresh the RecyclerView
+
+                    // Remove the item from both lists
+                    hikeDataModelArrayList.remove(originalPosition);
+                    filteredHikes.remove(position);
+
+                    // Refresh the RecyclerView to reflect the changes
+                    recyclerViewAdapter.notifyDataSetChanged();
+                } else {
+                    // Handle deletion error
+                    // You can show a Toast message or perform any other error handling here.
+                }
+            }
         } else {
-            // Handle deletion error
-            // You can show a Toast message or perform any other error handling here.
+            // Handle the case when the item to delete is not found in the filtered list
         }
     }
+
+
 
 
     public void onEditClick(int position) {
@@ -193,10 +203,9 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             // If the query is empty, show all hikes
             filteredHikes.addAll(hikeDataModelArrayList);
         }
-        Log.d("Hi", "" + filteredHikes.size());
 
-        recyclerView.setAdapter(adapter);
-
+        // Refresh the RecyclerView to reflect the changes
+        recyclerViewAdapter.notifyDataSetChanged();
     }
 
 

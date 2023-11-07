@@ -12,8 +12,6 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "hike_data.db";
-
-    // hike table
     public static final String TABLE_HIKES = "hikes";
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_HIKE_NAME = "hike_name";
@@ -42,7 +40,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create the "hikes" table when the database is created
+
         String CREATE_TABLE_HIKES = "CREATE TABLE " + TABLE_HIKES +
                 "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -50,7 +48,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_LOCATION + " TEXT NOT NULL," +
                 COLUMN_HIKE_LENGTH + " REAL NOT NULL," +
                 COLUMN_HIKE_DATE + " TEXT NOT NULL," +
-                COLUMN_PARKING_AVAILABLE + " INTEGER NOT NULL," + // 0 for false, 1 for true
+                COLUMN_PARKING_AVAILABLE + " INTEGER NOT NULL," +
                 COLUMN_EQUIPMENT + " TEXT," +
                 COLUMN_DIFFICULTY + " TEXT NOT NULL," +
                 COLUMN_DESCRIPTION + " TEXT," +
@@ -69,13 +67,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 ")";
         db.execSQL(CREATE_TABLE_OBSERVATIONS);
     }
-//testing
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Handle database schema upgrades (e.g., dropping and recreating tables)
-        String dropTable = "DROP TABLE IF EXISTS " + TABLE_HIKES;
-        db.execSQL(dropTable);
+        String dropHikesTable = "DROP TABLE IF EXISTS " + TABLE_HIKES;
+        db.execSQL(dropHikesTable);
         String dropObservationsTable = "DROP TABLE IF EXISTS " + TABLE_OBSERVATION;
         db.execSQL(dropObservationsTable);
         onCreate(db);
@@ -87,29 +83,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("PRAGMA foreign_keys=ON;"); //foreign key
     }
 
-    // Insert a new hike record into the database
+    // insert hike
     public long insertHike(HikeDataModel hikeDataModel) {
         db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
+        ContentValues cv = new ContentValues();
 
-        // Populate the ContentValues with data from the HikeDataModel
-        values.put(COLUMN_HIKE_NAME, hikeDataModel.getHikeName());
-        values.put(COLUMN_LOCATION, hikeDataModel.getLocation());
-        values.put(COLUMN_HIKE_LENGTH, hikeDataModel.getHikeLength());
-        values.put(COLUMN_HIKE_DATE, hikeDataModel.getHikeDate());
-        values.put(COLUMN_PARKING_AVAILABLE, hikeDataModel.isParkingAvailable() ? 1 : 0);
-        values.put(COLUMN_EQUIPMENT, hikeDataModel.getEquipment());
-        values.put(COLUMN_DIFFICULTY, hikeDataModel.getDifficulty());
-        values.put(COLUMN_DESCRIPTION, hikeDataModel.getDescription());
-        values.put(COLUMN_RATING, hikeDataModel.getRating());
+        cv.put(COLUMN_HIKE_NAME, hikeDataModel.getHikeName());
+        cv.put(COLUMN_LOCATION, hikeDataModel.getLocation());
+        cv.put(COLUMN_HIKE_LENGTH, hikeDataModel.getHikeLength());
+        cv.put(COLUMN_HIKE_DATE, hikeDataModel.getHikeDate());
+        cv.put(COLUMN_PARKING_AVAILABLE, hikeDataModel.isParkingAvailable() ? 1 : 0);
+        cv.put(COLUMN_EQUIPMENT, hikeDataModel.getEquipment());
+        cv.put(COLUMN_DIFFICULTY, hikeDataModel.getDifficulty());
+        cv.put(COLUMN_DESCRIPTION, hikeDataModel.getDescription());
+        cv.put(COLUMN_RATING, hikeDataModel.getRating());
 
-        // Insert the data into the "hikes" table
-        long hikeId = db.insertOrThrow(TABLE_HIKES, null, values);
+
+        long hikeId = db.insertOrThrow(TABLE_HIKES, null, cv);
 
         return hikeId;
     }
 
-    // Retrieve a list of all hikes from the database
+    //insert observations
+    public long insertObservation(ObservationDataModel observationDataModel) {
+        db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+
+        values.put(COLUMN_OBSERVATION_TEXT, observationDataModel.getObservationText());
+        values.put(COLUMN_OBSERVATION_TIME, observationDataModel.getObservationTime());
+        values.put(COLUMN_ADDITIONAL_CMT, observationDataModel.getAdditionalComment());
+        values.put(COLUMN_HIKE_ID, observationDataModel.getHikeId());
+
+        long observationId = db.insertOrThrow(TABLE_OBSERVATION, null, values);
+
+        return observationId;
+    }
+
+    //get all hikes
     public ArrayList<HikeDataModel> getHikes() {
         db = this.getReadableDatabase();
 
@@ -126,7 +137,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_RATING
         }, null, null, null, null, null);
 
-        ArrayList<HikeDataModel> hikeList = new ArrayList<>();
+        ArrayList<HikeDataModel> hikeDataModelArrayList = new ArrayList<>();
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -141,89 +152,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String desc = cursor.getString(8);
             Float rating = cursor.getFloat(9);
 
-            // Create a HikeDataModel object and add it to the list
+            //add it to the list
             HikeDataModel hikeDataModel = new HikeDataModel(id, hikeName, hikeLocation, hikeLength, hikeDate, parking, equipment, difficulty, desc, rating);
-            hikeList.add(hikeDataModel);
+            hikeDataModelArrayList.add(hikeDataModel);
             cursor.moveToNext();
         }
         cursor.close();
 
-        return hikeList;
+        return hikeDataModelArrayList;
     }
 
-    // Delete a hike record from the database by ID
-    public long deleteHike(int hikeId) {
-        db = this.getWritableDatabase();
-
-        String whereClause = COLUMN_ID + " = ?";
-        String[] whereArgs = {String.valueOf(hikeId)};
-
-        return db.delete(TABLE_HIKES, whereClause, whereArgs);
-    }
-
-    //update hike
-// Update a hike record in the database
-    public int updateHike(HikeDataModel hikeDataModel) {
-        db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-
-        // Populate the ContentValues with updated data from the HikeDataModel
-        values.put(COLUMN_HIKE_NAME, hikeDataModel.getHikeName());
-        values.put(COLUMN_LOCATION, hikeDataModel.getLocation());
-        values.put(COLUMN_HIKE_LENGTH, hikeDataModel.getHikeLength());
-        values.put(COLUMN_HIKE_DATE, hikeDataModel.getHikeDate());
-        values.put(COLUMN_PARKING_AVAILABLE, hikeDataModel.isParkingAvailable() ? 1 : 0);
-        values.put(COLUMN_EQUIPMENT, hikeDataModel.getEquipment());
-        values.put(COLUMN_DIFFICULTY, hikeDataModel.getDifficulty());
-        values.put(COLUMN_DESCRIPTION, hikeDataModel.getDescription());
-        values.put(COLUMN_RATING, hikeDataModel.getRating());
-
-        String whereClause = COLUMN_ID + " = ?";
-        String[] whereArgs = {String.valueOf(hikeDataModel.getId())};
-
-        int rowsUpdated = db.update(TABLE_HIKES, values, whereClause, whereArgs);
-
-        db.close();
-
-        return rowsUpdated;
-    }
-///start
-
-    public long insertObservation(ObservationDataModel observationDataModel) {
-        db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-
-
-        values.put(COLUMN_OBSERVATION_TEXT, observationDataModel.getObservationText());
-        values.put(COLUMN_OBSERVATION_TIME, observationDataModel.getObservationTime());
-        values.put(COLUMN_ADDITIONAL_CMT, observationDataModel.getAdditionalComment());
-        values.put(COLUMN_HIKE_ID, observationDataModel.getHikeId());
-
-        long newRowId = db.insertOrThrow(TABLE_OBSERVATION, null, values);
-
-        return newRowId;
-    }
-
+    //get all observations
     public ArrayList<ObservationDataModel> getObservations(int hikeId) {
         db = this.getReadableDatabase();
-
-
-        String[] projection = {
-                COLUMN_OBSERVATION_ID,
-                COLUMN_OBSERVATION_TEXT,
-                COLUMN_OBSERVATION_TIME,
-                COLUMN_ADDITIONAL_CMT,
-                COLUMN_HIKE_ID
-
-        };
-
 
         String selection = COLUMN_HIKE_ID + " = ?";
         String[] selectionArgs = {String.valueOf(hikeId)};
 
         Cursor cursor = db.query(
                 TABLE_OBSERVATION,
-                projection,
+                new String[]{
+                        COLUMN_OBSERVATION_ID,
+                        COLUMN_OBSERVATION_TEXT,
+                        COLUMN_OBSERVATION_TIME,
+                        COLUMN_ADDITIONAL_CMT,
+                        COLUMN_HIKE_ID},
                 selection,
                 selectionArgs,
                 null,
@@ -235,15 +188,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             int observationId = cursor.getInt(0);
-            String observationText = cursor.getString(1); // Correct the column index here
-            String observationTime = cursor.getString(2); // Correct the column index here
-            String additionalComment = cursor.getString(3);  // Correct the column index here
+            String observationText = cursor.getString(1);
+            String observationTime = cursor.getString(2);
+            String additionalComment = cursor.getString(3);
             int hike_id = cursor.getInt(4);
 
 
-            ObservationDataModel observation = new ObservationDataModel(observationId,hike_id, observationText, observationTime, additionalComment);
+            ObservationDataModel observationList = new ObservationDataModel(observationId, hike_id, observationText, observationTime, additionalComment);
 
-            observationDataModelArrayList.add(observation);
+            observationDataModelArrayList.add(observationList);
             cursor.moveToNext();
         }
         cursor.close();
@@ -252,20 +205,56 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    //Delete hike
+    public long deleteHike(int hikeId) {
+        db = this.getWritableDatabase();
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(hikeId)};
+        long deletedHike = db.delete(TABLE_HIKES, whereClause, whereArgs);
+        return deletedHike;
+    }
+
+    //delete observation
     public int deleteObservations(int observationId) {
         db = this.getWritableDatabase();
 
         String whereClause = COLUMN_ID + " = ?";
         String[] whereArgs = {String.valueOf(observationId)};
-
-        int deletedRows = db.delete(TABLE_OBSERVATION, whereClause, whereArgs);
-        return deletedRows;
+        int deletedObs = db.delete(TABLE_OBSERVATION, whereClause, whereArgs);
+        return deletedObs;
     }
+
+    //update hike
+    public int updateHike(HikeDataModel hikeDataModel) {
+        db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_HIKE_NAME, hikeDataModel.getHikeName());
+        cv.put(COLUMN_LOCATION, hikeDataModel.getLocation());
+        cv.put(COLUMN_HIKE_LENGTH, hikeDataModel.getHikeLength());
+        cv.put(COLUMN_HIKE_DATE, hikeDataModel.getHikeDate());
+        cv.put(COLUMN_PARKING_AVAILABLE, hikeDataModel.isParkingAvailable() ? 1 : 0);
+        cv.put(COLUMN_EQUIPMENT, hikeDataModel.getEquipment());
+        cv.put(COLUMN_DIFFICULTY, hikeDataModel.getDifficulty());
+        cv.put(COLUMN_DESCRIPTION, hikeDataModel.getDescription());
+        cv.put(COLUMN_RATING, hikeDataModel.getRating());
+
+        String whereClause = COLUMN_ID + " = ?";
+        String[] whereArgs = {String.valueOf(hikeDataModel.getId())};
+
+        int updatedHike = db.update(TABLE_HIKES, cv, whereClause, whereArgs);
+
+        db.close();
+
+        return updatedHike;
+    }
+
+    ///Observation update
     public int updateObservation(ObservationDataModel observationDataModel) {
         db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
-        // Populate the ContentValues with updated data from the ObservationDataModel
         values.put(COLUMN_OBSERVATION_TEXT, observationDataModel.getObservationText());
         values.put(COLUMN_OBSERVATION_TIME, observationDataModel.getObservationTime());
         values.put(COLUMN_ADDITIONAL_CMT, observationDataModel.getAdditionalComment());
@@ -280,13 +269,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return rowsUpdated;
     }
-    public void deleteAllUsers(){
-        db.delete(TABLE_HIKES,null,null);
+
+    //delete all
+    public void deleteAllUsers() {
+        db.delete(TABLE_HIKES, null, null);
 
     }
-
-
-
-
 
 }
