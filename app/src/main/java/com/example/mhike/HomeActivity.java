@@ -30,7 +30,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
 
     boolean isSearching = false;
 
-    String searchedString ;
+    String searchedString;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,12 +67,16 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Perform the search when text changes
+
                 performSearch(s.toString());
                 Log.d("SearchText", "" + s.toString());
                 searchedString = s.toString();
-                if(searchedString.isEmpty()){isSearching = false;}
-                isSearching = true;
 
+                if (searchedString.isEmpty()) {
+                    isSearching = false;
+                } else {
+                    isSearching = true;
+                }
 
             }
 
@@ -165,19 +169,20 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
 
             if (result != -1) {
 
-                if(!searchedString.isEmpty()){
-                    adapter.notifyDataSetChanged();
-                    filteredHikes.remove(position);
-                    adapter.notifyItemRemoved(position);
-                    adapter.notifyItemRangeChanged(position, filteredHikes.size());
-                }else{
+//                if (!searchedString.isEmpty()) {
+//
+//                    adapter.notifyDataSetChanged();
+//                    filteredHikes.remove(position);
+//                    adapter.notifyItemRemoved(position);
+//                    adapter.notifyItemRangeChanged(position, filteredHikes.size());
+//                } else{
                     recyclerView.setAdapter(recyclerViewAdapter);
 
                     hikeDataModelArrayList.remove(originalPosition);
                     recyclerViewAdapter.notifyItemRemoved(originalPosition);
                     recyclerViewAdapter.notifyItemRangeChanged(originalPosition, hikeDataModelArrayList.size());
                     isSearching = false;
-                }
+               // }
 
 
             }
@@ -197,7 +202,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         HikeDataModel hikeData;
         // Retrieve the selected hike based on the position
         hikeData = hikeDataModelArrayList.get(position);
-        if(isSearching){
+        if (isSearching) {
             hikeData = filteredHikes.get(position);
             int hikeId = hikeData.getId();
             int originalPosition = findPositionById(hikeId, hikeDataModelArrayList);
@@ -226,17 +231,21 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
     private void performSearch(String query) {
         filteredHikes.clear();
 
+
+        Log.d("COUNT1", "" + filteredHikes.size());
         if (!query.isEmpty()) {
+
             for (HikeDataModel hike : hikeDataModelArrayList) {
                 if (hike.getHikeName().toLowerCase().contains(query.toLowerCase())) {
                     filteredHikes.add(hike);
                 }
             }
-            Log.d("COUNT", "" + filteredHikes.size());
+            Log.d("COUNT2", "" + filteredHikes.size());
         } else {
             // If the query is empty, show all hikes
             filteredHikes.addAll(hikeDataModelArrayList);
         }
+
         recyclerView.setAdapter(adapter);
         // Refresh the RecyclerView to reflect the changes
         recyclerViewAdapter.notifyDataSetChanged();
