@@ -1,6 +1,8 @@
 package com.example.mhike;
 
+import android.app.AlertDialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -170,26 +172,40 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
     }
     @Override
     public void onDeleteClick(int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(HikeDetailsActivity.this);
+        builder.setTitle("Confirm Delete")
+                .setMessage("Are you sure you want to delete?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (position >= 0 && position < observationDataModelArrayList.size()) {
+                            //observation to delete
+                            int observationIdToDelete = observationDataModelArrayList.get(position).getObservationId();
+                            // delete observation
+                            int result = databaseHelper.deleteObservations(observationIdToDelete);
 
-        if (position >= 0 && position < observationDataModelArrayList.size()) {
-            //observation to delete
-            int observationIdToDelete = observationDataModelArrayList.get(position).getObservationId();
-            // delete observation
-            int result = databaseHelper.deleteObservations(observationIdToDelete);
+                            if (result > 0) {
+                                Toast.makeText(HikeDetailsActivity.this, "Observation deleted successfully", Toast.LENGTH_SHORT).show();
 
-            if (result > 0) {
-                Toast.makeText(HikeDetailsActivity.this, "Observation deleted successfully", Toast.LENGTH_SHORT).show();
+                                // Update RecyclerView
+                                observationDataModelArrayList.remove(position);
 
-                // Update the RecyclerView with the latest data
-                observationDataModelArrayList.remove(position);
+                                observationRecyclerViewAdapter.notifyItemRemoved(position);
+                                observationRecyclerViewAdapter.updateData(observationDataModelArrayList);
+                            } else {
 
-                observationRecyclerViewAdapter.notifyItemRemoved(position);
-                observationRecyclerViewAdapter.updateData(observationDataModelArrayList);
-            } else {
-                // Deletion failed
-                Toast.makeText(HikeDetailsActivity.this, "Failed to delete observation", Toast.LENGTH_SHORT).show();
-            }
-        }
+                                Toast.makeText(HikeDetailsActivity.this, "Failed to delete observation", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
     }
 
 

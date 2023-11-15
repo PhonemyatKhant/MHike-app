@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
-    // Variable to hold the interface
     private final RecyclerViewInterface recyclerViewInterface;
     Context context;
     ArrayList<HikeDataModel> hikeDataModelArrayList;
@@ -27,14 +26,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public RecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // Inflating the layout for each item view
+
         View view = LayoutInflater.from(context).inflate(R.layout.recycler_item, parent, false);
         return new RecyclerViewAdapter.MyViewHolder(view, recyclerViewInterface);
     }
 
     @Override
     public void onBindViewHolder(RecyclerViewAdapter.MyViewHolder holder, int position) {
-        // Binding data to the item view
+
         HikeDataModel hikeDataModel = hikeDataModelArrayList.get(position);
         holder.h_image.setImageResource(R.drawable.image);
         holder.h_name.setText(hikeDataModel.getHikeName());
@@ -72,7 +71,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             btn_edit = itemView.findViewById(R.id.btn_editObservation);
             btn_delete = itemView.findViewById(R.id.btn_deleteObservation);
 
-            // Set an onClickListener for the item view
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -86,7 +84,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 }
             });
 
-            // Set an onClickListener for the delete button
             btn_delete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

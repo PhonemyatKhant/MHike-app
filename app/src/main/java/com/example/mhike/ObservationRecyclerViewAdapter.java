@@ -78,7 +78,7 @@ public class ObservationRecyclerViewAdapter extends RecyclerView.Adapter<Observa
                         int pos = getAdapterPosition();
                         if (pos != RecyclerView.NO_POSITION) {
                             observationRecyclerViewInterface.onDeleteClick(pos);
-                            Log.d("MyApp", "Delete"); // Log a message with "delete"
+                            Log.d("MyApp", "Delete");
 
                         }
                     }
