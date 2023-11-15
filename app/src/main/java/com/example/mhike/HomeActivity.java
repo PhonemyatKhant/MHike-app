@@ -38,27 +38,22 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         setContentView(R.layout.activity_home);
         etSearch = findViewById(R.id.etSearch);
 
-        // Initialize the UI components and database helper
+        // ui elements
         recyclerView = findViewById(R.id.recyclerView);
         btn_add = findViewById(R.id.btn_add);
         btn_deleteAll = findViewById(R.id.btn_deleteAll);
         databaseHelper = new DatabaseHelper(this);
 
-        // Retrieve a list of hikes from the database
+        //rv adapter
         hikeDataModelArrayList = databaseHelper.getHikes();
+        recyclerViewAdapter = new RecyclerViewAdapter(this, hikeDataModelArrayList, this);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.hasFixedSize();
+        recyclerView.setAdapter(recyclerViewAdapter);
+
         filteredHikes = new ArrayList<>();
         adapter = new RecyclerViewAdapter(this, filteredHikes, this);
 
-
-        // Set up the RecyclerView to display the list of hikes
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.hasFixedSize();
-
-        // Create and set the adapter for the RecyclerView
-        recyclerViewAdapter = new RecyclerViewAdapter(this, hikeDataModelArrayList, this);
-        recyclerView.setAdapter(recyclerViewAdapter);
-
-        // Add a TextWatcher to the search EditText
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -66,7 +61,6 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Perform the search when text changes
 
                 performSearch(s.toString());
                 Log.d("SearchText", "" + s.toString());
@@ -77,7 +71,6 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                 } else {
                     isSearching = true;
                 }
-
             }
 
             @Override
@@ -85,11 +78,9 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             }
         });
 
-        // Handle button clicks
         btn_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start the InputHikeActivity when the "Add" button is clicked
                 Intent intent = new Intent(HomeActivity.this, InputHikeActivity.class);
                 startActivity(intent);
             }
@@ -97,28 +88,44 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         btn_deleteAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                databaseHelper.deleteAllUsers();
-                hikeDataModelArrayList.clear();
-                filteredHikes.clear();
-                // Notify the adapter that the data set has changed
-                adapter.notifyDataSetChanged();
-                recyclerViewAdapter.notifyDataSetChanged();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Confirm Delete")
+                        .setMessage("Are you sure you want to delete all hikes?")
+                        .setPositiveButton("Delete All", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // User confirmed, proceed with delete-all operation
+                                databaseHelper.deleteAllUsers();
+                                hikeDataModelArrayList.clear();
+                                filteredHikes.clear();
+
+                                adapter.notifyDataSetChanged();
+                                recyclerViewAdapter.notifyDataSetChanged();
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // User canceled the operation
+                                dialog.dismiss();
+                            }
+                        })
+                        .show();
+            }
+
+
 
             }
         });
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
         if (recyclerViewAdapter != null) {
-            // Fetch the updated data from the database
             ArrayList<HikeDataModel> updatedData = databaseHelper.getHikes();
-
-            // Update the dataset in the adapter
             recyclerViewAdapter.updateData(updatedData);
-
-
         }
     }
 
