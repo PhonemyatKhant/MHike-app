@@ -208,8 +208,6 @@ public class InputHikeActivity extends AppCompatActivity {
                     }
                 }
 
-// Finish the activity and navigate back to HomeActivity
-
                 Intent intent = new Intent(InputHikeActivity.this, HomeActivity.class);
                 startActivity(intent);
                // finish();

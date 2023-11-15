@@ -44,11 +44,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @Override
     public int getItemCount() {
-        // Returning the number of items in the list
+
         return hikeDataModelArrayList.size();
     }
 
-    // Method to update the dataset when it changes
+
     public void updateData(ArrayList<HikeDataModel> newData) {
         hikeDataModelArrayList.clear();
         hikeDataModelArrayList.addAll(newData);

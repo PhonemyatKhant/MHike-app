@@ -80,7 +80,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
-        db.execSQL("PRAGMA foreign_keys=ON;"); //foreign key
+        db.execSQL("PRAGMA foreign_keys=ON;");
     }
 
     // insert hike
@@ -107,15 +107,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //insert observations
     public long insertObservation(ObservationDataModel observationDataModel) {
         db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
+        ContentValues cv = new ContentValues();
 
 
-        values.put(COLUMN_OBSERVATION_TEXT, observationDataModel.getObservationText());
-        values.put(COLUMN_OBSERVATION_TIME, observationDataModel.getObservationTime());
-        values.put(COLUMN_ADDITIONAL_CMT, observationDataModel.getAdditionalComment());
-        values.put(COLUMN_HIKE_ID, observationDataModel.getHikeId());
+        cv.put(COLUMN_OBSERVATION_TEXT, observationDataModel.getObservationText());
+        cv.put(COLUMN_OBSERVATION_TIME, observationDataModel.getObservationTime());
+        cv.put(COLUMN_ADDITIONAL_CMT, observationDataModel.getAdditionalComment());
+        cv.put(COLUMN_HIKE_ID, observationDataModel.getHikeId());
 
-        long observationId = db.insertOrThrow(TABLE_OBSERVATION, null, values);
+        long observationId = db.insertOrThrow(TABLE_OBSERVATION, null, cv);
 
         return observationId;
     }
@@ -194,11 +194,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             int hike_id = cursor.getInt(4);
 
 
-            ObservationDataModel observationList = new ObservationDataModel(observationId, hike_id, observationText, observationTime, additionalComment);
+            ObservationDataModel observationDataModel = new ObservationDataModel(observationId, hike_id, observationText, observationTime, additionalComment);
 
-            observationDataModelArrayList.add(observationList);
+            observationDataModelArrayList.add(observationDataModel);
             cursor.moveToNext();
         }
+
         cursor.close();
 
         return observationDataModelArrayList;
@@ -219,7 +220,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public int deleteObservations(int observationId) {
         db = this.getWritableDatabase();
 
-        String whereClause = COLUMN_ID + " = ?";
+        String whereClause = COLUMN_OBSERVATION_ID + " = ?";
         String[] whereArgs = {String.valueOf(observationId)};
         int deletedObs = db.delete(TABLE_OBSERVATION, whereClause, whereArgs);
         return deletedObs;
@@ -253,17 +254,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     ///Observation update
     public int updateObservation(ObservationDataModel observationDataModel) {
         db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
+        ContentValues cv = new ContentValues();
 
-        values.put(COLUMN_OBSERVATION_TEXT, observationDataModel.getObservationText());
-        values.put(COLUMN_OBSERVATION_TIME, observationDataModel.getObservationTime());
-        values.put(COLUMN_ADDITIONAL_CMT, observationDataModel.getAdditionalComment());
-        values.put(COLUMN_HIKE_ID, observationDataModel.getHikeId());
+
+        cv.put(COLUMN_OBSERVATION_TEXT, observationDataModel.getObservationText());
+        cv.put(COLUMN_OBSERVATION_TIME, observationDataModel.getObservationTime());
+        cv.put(COLUMN_ADDITIONAL_CMT, observationDataModel.getAdditionalComment());
+        cv.put(COLUMN_HIKE_ID, observationDataModel.getHikeId());
 
         String whereClause = COLUMN_OBSERVATION_ID + " = ?";
         String[] whereArgs = {String.valueOf(observationDataModel.getObservationId())};
 
-        int rowsUpdated = db.update(TABLE_OBSERVATION, values, whereClause, whereArgs);
+        int rowsUpdated = db.update(TABLE_OBSERVATION, cv, whereClause, whereArgs);
 
         db.close();
 

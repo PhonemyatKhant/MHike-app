@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 public class HikeDetailsActivity extends AppCompatActivity implements ObservationRecyclerViewInterface {
-
-    private TextView hikeTitle;
-    private TextView location, length, date, parking, difficulty, rating, equipment, description;
+    private TextView hikeTitle,location, length, date, parking, difficulty, rating, equipment, description;
 
     private Button addObservation;
 
@@ -92,11 +90,7 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
         //get observation data
         observationDataModelArrayList = databaseHelper.getObservations(hike_id);
 
-
-        // Set up the RecyclerView to display the list of hikes
-
-
-        // Create and set the adapter for the RecyclerView
+        // Set up the RecyclerView
 
         recyclerView.hasFixedSize();
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -137,10 +131,9 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
                     long newRowId = databaseHelper.insertObservation(observationDataModel);
 
                     if (newRowId != -1) {
-                        // Insertion was successful
+
                         Toast.makeText(HikeDetailsActivity.this, "Observation added successfully", Toast.LENGTH_SHORT).show();
 
-                        // Optionally, you can clear the input fields
                         observationName.setText("");
                         observationTime.setText("");
                         additionalCmt.setText("");
@@ -149,8 +142,6 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
                         observationRecyclerViewAdapter.updateData(observationDataModelArrayList);
 
                     } else {
-                        // Insertion failed
-
                         Toast.makeText(HikeDetailsActivity.this, "Failed to add observation" + hike_id, Toast.LENGTH_SHORT).show();
                     }
                 }
