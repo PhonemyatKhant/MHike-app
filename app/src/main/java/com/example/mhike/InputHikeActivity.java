@@ -32,9 +32,7 @@ public class InputHikeActivity extends AppCompatActivity {
     private RatingBar ratingBar;
     private Spinner spn_difficulty;
     private RecyclerViewAdapter recyclerViewAdapter;
-
     DatabaseHelper databaseHelper;
-
     SQLiteDatabase db;
     ArrayList<HikeDataModel> hikeDataModelArrayList;
     int hike_id;
@@ -60,6 +58,7 @@ public class InputHikeActivity extends AppCompatActivity {
         btn_submit = findViewById(R.id.btn_submit);
 
         databaseHelper = new DatabaseHelper(this);
+
         hikeDataModelArrayList = databaseHelper.getHikes();
 
 
@@ -78,6 +77,8 @@ public class InputHikeActivity extends AppCompatActivity {
 
         // Retrieve data from the intent
         Bundle extras = getIntent().getExtras();
+
+        // if not null populate data to ui elements
         if (extras != null) {
             hike_id = extras.getInt("hikeId");
             String hikeName = extras.getString("hikeName");
@@ -89,8 +90,6 @@ public class InputHikeActivity extends AppCompatActivity {
             float hikeRating = extras.getFloat("rating");
             String hikeEquipment = extras.getString("equipment");
             String hikeDescription = extras.getString("description");
-
-            // Set the data to the corresponding views
 
             et_hikeName.setText(hikeName);
             et_location.setText(hikeLocation);
@@ -111,8 +110,6 @@ public class InputHikeActivity extends AppCompatActivity {
             et_desc.setText(hikeDescription);
         }
 
-
-        //submit button click
         btn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -120,7 +117,6 @@ public class InputHikeActivity extends AppCompatActivity {
 
                 if (TextUtils.isEmpty(et_hikeName.getText().toString())
                         || TextUtils.isEmpty(et_location.getText().toString())
-                        || TextUtils.isEmpty(et_desc.getText().toString())
                         || TextUtils.isEmpty(et_hikeLength.getText().toString())
                         || TextUtils.isEmpty(et_hikeDate.getText().toString())
                         || TextUtils.isEmpty(spn_difficulty.getSelectedItem().toString())
@@ -175,7 +171,7 @@ public class InputHikeActivity extends AppCompatActivity {
 
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {// Check if you received a hikeId, indicating editing
+            public void onClick(View v) {
                 boolean isEditing = false;
                 Bundle extras = getIntent().getExtras();
                 if (extras != null) {
@@ -185,23 +181,22 @@ public class InputHikeActivity extends AppCompatActivity {
                     }
                 }
 
-// Now, you can use the isEditing flag to update or insert data accordingly
                 if (isEditing) {
-                    // Perform update
+                    //edit hike
                     HikeDataModel hikeDataModel = new HikeDataModel(hike_id, et_hikeName.getText().toString(), et_location.getText().toString(), Double.parseDouble(et_hikeLength.getText().toString()), et_hikeDate.getText().toString(), rd_yes.isChecked(), et_equipment.getText().toString(), spn_difficulty.getSelectedItem().toString(), et_desc.getText().toString(), ratingBar.getRating());
-                    long rowsAffected = databaseHelper.updateHike(hikeDataModel);
+                    long result = databaseHelper.updateHike(hikeDataModel);
 
-                    if (rowsAffected > 0) {
+                    if (result > 0) {
                         Toast.makeText(InputHikeActivity.this, "Data updated successfully!", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(InputHikeActivity.this, "Data update failed.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    // Perform insert
+                    //insert hike
                     HikeDataModel hikeDataModel = new HikeDataModel(0, et_hikeName.getText().toString(), et_location.getText().toString(), Double.parseDouble(et_hikeLength.getText().toString()), et_hikeDate.getText().toString(), rd_yes.isChecked(), et_equipment.getText().toString(), spn_difficulty.getSelectedItem().toString(), et_desc.getText().toString(), ratingBar.getRating());
-                    long newRowId = databaseHelper.insertHike(hikeDataModel);
+                    long result = databaseHelper.insertHike(hikeDataModel);
 
-                    if (newRowId != -1) {
+                    if (result != -1) {
                         Toast.makeText(InputHikeActivity.this, "Data saved successfully!", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(InputHikeActivity.this, "Data save failed.", Toast.LENGTH_SHORT).show();
@@ -210,8 +205,6 @@ public class InputHikeActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(InputHikeActivity.this, HomeActivity.class);
                 startActivity(intent);
-               // finish();
-
             }
         });
 
