@@ -1,5 +1,7 @@
 package com.example.mhike;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -88,7 +90,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         btn_deleteAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(HomeActivity.this);
                 builder.setTitle("Confirm Delete")
                         .setMessage("Are you sure you want to delete all hikes?")
                         .setPositiveButton("Delete All", new DialogInterface.OnClickListener() {
@@ -106,15 +108,10 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                // User canceled the operation
                                 dialog.dismiss();
                             }
                         })
                         .show();
-            }
-
-
-
             }
         });
     }
@@ -131,13 +128,13 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
 
     @Override
     public void onItemClick(int position) {
-        // Retrieve the selected hike based on the position
+
         HikeDataModel hikeData = hikeDataModelArrayList.get(position);
 
-        // Create an intent to navigate to a new activity to view hike details
         Intent intent = new Intent(HomeActivity.this, HikeDetailsActivity.class);
 
-        // Pass data to the new activity
+        // Pass data to hikedetailsactivity
+
         intent.putExtra("hikeId", hikeData.getId());
         intent.putExtra("hikeName", hikeData.getHikeName());
         intent.putExtra("location", hikeData.getLocation());
@@ -149,51 +146,57 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         intent.putExtra("description", hikeData.getDescription());
         intent.putExtra("rating", hikeData.getRating());
 
-        // Start the new activity
         startActivity(intent);
     }
 
 
     public void onDeleteClick(int position) {
-        if (isSearching == false) {
-            HikeDataModel hikeData = hikeDataModelArrayList.get(position);
-
-            int hikeId = hikeData.getId();
-            long result = databaseHelper.deleteHike(hikeId);
-
-
-            if (result != -1) {
-                hikeDataModelArrayList.remove(position);
-                recyclerViewAdapter.notifyItemRemoved(position);
-                recyclerViewAdapter.notifyItemRangeChanged(position, hikeDataModelArrayList.size());
-            }
-        } else {
-            HikeDataModel hikeData = filteredHikes.get(position);
-
-            int hikeId = hikeData.getId();
-            int originalPosition = findPositionById(hikeId, hikeDataModelArrayList);
-            long result = databaseHelper.deleteHike(hikeId);
-
-            if (result != -1) {
-
-//                if (!searchedString.isEmpty()) {
-//
-//                    adapter.notifyDataSetChanged();
-//                    filteredHikes.remove(position);
-//                    adapter.notifyItemRemoved(position);
-//                    adapter.notifyItemRangeChanged(position, filteredHikes.size());
-//                } else{
-                    recyclerView.setAdapter(recyclerViewAdapter);
-
-                    hikeDataModelArrayList.remove(originalPosition);
-                    recyclerViewAdapter.notifyItemRemoved(originalPosition);
-                    recyclerViewAdapter.notifyItemRangeChanged(originalPosition, hikeDataModelArrayList.size());
-                    isSearching = false;
-               // }
+        AlertDialog.Builder builder = new AlertDialog.Builder(HomeActivity.this);
+        builder.setTitle("Confirm Delete")
+                .setMessage("Are you sure you want to delete?")
+                .setPositiveButton("Delete Hike", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (isSearching == false) {
+                            //data to delete
+                            HikeDataModel hikeData = hikeDataModelArrayList.get(position);
+                            //id to delete
+                            int hikeId = hikeData.getId();
+                            long result = databaseHelper.deleteHike(hikeId);
 
 
-            }
-        }
+                            if (result != -1) {
+                                hikeDataModelArrayList.remove(position);
+                                recyclerViewAdapter.notifyItemRemoved(position);
+                                recyclerViewAdapter.notifyItemRangeChanged(position, hikeDataModelArrayList.size());
+                            }
+                        } else {
+                            HikeDataModel hikeData = filteredHikes.get(position);
+
+                            int hikeId = hikeData.getId();
+                            int originalPosition = findPositionById(hikeId, hikeDataModelArrayList);
+                            long result = databaseHelper.deleteHike(hikeId);
+
+                            if (result != -1) {
+                                etSearch.setText("");
+                                recyclerView.setAdapter(recyclerViewAdapter);
+
+                                hikeDataModelArrayList.remove(originalPosition);
+                                recyclerViewAdapter.notifyItemRemoved(originalPosition);
+                                recyclerViewAdapter.notifyItemRangeChanged(originalPosition, hikeDataModelArrayList.size());
+                                isSearching = false;
+                            }
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+
     }
 
     private int findPositionById(int hikeId, ArrayList<HikeDataModel> list) {
@@ -202,12 +205,12 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                 return i;
             }
         }
-        return -1; // Return -1 if the item is not found in the list
+        return -1; //not found
     }
 
     public void onEditClick(int position) {
+
         HikeDataModel hikeData;
-        // Retrieve the selected hike based on the position
         hikeData = hikeDataModelArrayList.get(position);
         if (isSearching) {
             hikeData = filteredHikes.get(position);
@@ -216,10 +219,9 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             hikeData = hikeDataModelArrayList.get(originalPosition);
         }
 
-        // Create an intent to navigate to a new activity to view hike details
         Intent intent = new Intent(HomeActivity.this, InputHikeActivity.class);
 
-        // Pass data to the new activity
+        // Pass data to input forms
         intent.putExtra("hikeId", hikeData.getId());
         intent.putExtra("hikeName", hikeData.getHikeName());
         intent.putExtra("location", hikeData.getLocation());
@@ -231,13 +233,12 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
         intent.putExtra("description", hikeData.getDescription());
         intent.putExtra("rating", hikeData.getRating());
 
-        // Start the new activity
         startActivity(intent);
     }
 
     private void performSearch(String query) {
-        filteredHikes.clear();
 
+        filteredHikes.clear();
 
         Log.d("COUNT1", "" + filteredHikes.size());
         if (!query.isEmpty()) {
@@ -249,12 +250,11 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             }
             Log.d("COUNT2", "" + filteredHikes.size());
         } else {
-            // If the query is empty, show all hikes
+            // if empty show all hikes
             filteredHikes.addAll(hikeDataModelArrayList);
         }
 
         recyclerView.setAdapter(adapter);
-        // Refresh the RecyclerView to reflect the changes
         recyclerViewAdapter.notifyDataSetChanged();
     }
 
