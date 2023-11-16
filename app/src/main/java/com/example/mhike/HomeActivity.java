@@ -68,7 +68,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                 Log.d("SearchText", "" + s.toString());
                 searchedString = s.toString();
 
-                if (searchedString.isEmpty()) {
+                if (searchedString.isEmpty() || searchedString == "" ) {
                     isSearching = false;
                 } else {
                     isSearching = true;
@@ -169,6 +169,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                                 hikeDataModelArrayList.remove(position);
                                 recyclerViewAdapter.notifyItemRemoved(position);
                                 recyclerViewAdapter.notifyItemRangeChanged(position, hikeDataModelArrayList.size());
+                                //recyclerView.setAdapter(recyclerViewAdapter);
                             }
                         } else {
                             HikeDataModel hikeData = filteredHikes.get(position);
@@ -179,12 +180,13 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
 
                             if (result != -1) {
                                 etSearch.setText("");
-                                recyclerView.setAdapter(recyclerViewAdapter);
+
 
                                 hikeDataModelArrayList.remove(originalPosition);
                                 recyclerViewAdapter.notifyItemRemoved(originalPosition);
                                 recyclerViewAdapter.notifyItemRangeChanged(originalPosition, hikeDataModelArrayList.size());
-                                isSearching = false;
+                                recyclerView.setAdapter(recyclerViewAdapter);
+                                //isSearching = false;
                             }
                         }
                     }
@@ -248,13 +250,14 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                     filteredHikes.add(hike);
                 }
             }
-            Log.d("COUNT2", "" + filteredHikes.size());
+            recyclerView.setAdapter(adapter);
         } else {
             // if empty show all hikes
-            filteredHikes.addAll(hikeDataModelArrayList);
+            //filteredHikes.addAll(hikeDataModelArrayList);
+            recyclerView.setAdapter(recyclerViewAdapter);
         }
 
-        recyclerView.setAdapter(adapter);
+
         recyclerViewAdapter.notifyDataSetChanged();
     }
 
