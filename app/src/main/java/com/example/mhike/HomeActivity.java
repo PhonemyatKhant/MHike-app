@@ -169,7 +169,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                                 hikeDataModelArrayList.remove(position);
                                 recyclerViewAdapter.notifyItemRemoved(position);
                                 recyclerViewAdapter.notifyItemRangeChanged(position, hikeDataModelArrayList.size());
-                                //recyclerView.setAdapter(recyclerViewAdapter);
+
                             }
                         } else {
                             HikeDataModel hikeData = filteredHikes.get(position);
@@ -186,7 +186,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
                                 recyclerViewAdapter.notifyItemRemoved(originalPosition);
                                 recyclerViewAdapter.notifyItemRangeChanged(originalPosition, hikeDataModelArrayList.size());
                                 recyclerView.setAdapter(recyclerViewAdapter);
-                                //isSearching = false;
+
                             }
                         }
                     }
@@ -252,7 +252,7 @@ public class HomeActivity extends AppCompatActivity implements RecyclerViewInter
             }
             recyclerView.setAdapter(adapter);
         } else {
-            // if empty show all hikes
+            // if empty
             //filteredHikes.addAll(hikeDataModelArrayList);
             recyclerView.setAdapter(recyclerViewAdapter);
         }

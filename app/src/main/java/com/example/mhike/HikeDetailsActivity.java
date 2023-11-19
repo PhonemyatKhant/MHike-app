@@ -231,7 +231,7 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
                 public void onClick(View v) {
                     if (TextUtils.isEmpty(observationName.getText().toString())
                             || TextUtils.isEmpty(observationTime.getText().toString())
-                            || TextUtils.isEmpty(additionalCmt.getText().toString())) {
+                            ) {
                         Toast.makeText(HikeDetailsActivity.this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
                     } else {
                         // Get values from inputs
@@ -258,8 +258,8 @@ public class HikeDetailsActivity extends AppCompatActivity implements Observatio
                             observationDataModelArrayList = databaseHelper.getObservations(hike_id);
                             observationRecyclerViewAdapter.updateData(observationDataModelArrayList);
                             Intent intent = getIntent();
-                            finish(); // Finish the current activity
-                            startActivity(intent); // Start the activity again
+                            finish();
+                            startActivity(intent);
                         } else {
                             Toast.makeText(HikeDetailsActivity.this, "Failed to update observation", Toast.LENGTH_SHORT).show();
                         }
